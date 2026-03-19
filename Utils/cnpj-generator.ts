@@ -1,4 +1,20 @@
-export function gerarCNPJ(): string {
+function hashString(str: string): number {
+   return str.split("").reduce((acc, char) => {
+      return (acc * 31 + char.charCodeAt(0)) & 0xffffffff;
+   }, 0);
+}
+
+function criarRng(seed: number): () => number {
+   let s = seed;
+   return () => {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+   };
+}
+
+export function gerarCNPJ(seed: string): string {
+   const rng = criarRng(hashString(seed));
+
    const calcularDigito = (cnpj: number[], pesos: number[]): number => {
       const soma = cnpj.reduce((acc, n, i) => acc + n * pesos[i], 0);
       const resto = soma % 11;
@@ -6,7 +22,7 @@ export function gerarCNPJ(): string {
    };
 
    const numeros: number[] = Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 10)
+      Math.floor(rng() * 10)
    );
 
    const pesos1: number[] = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
